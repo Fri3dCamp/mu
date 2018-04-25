@@ -4,6 +4,7 @@ from .python3 import PYTHON3_APIS
 from .pi import PI_APIS
 from .shared import SHARED_APIS
 from .pygamezero import PYGAMEZERO_APIS
+from .fri3dcamp import FRI3DCAMP_APIS
 
 __all__ = ['ADAFRUIT_APIS', 'MICROBIT_APIS', 'PYTHON3_APIS', 'PI_APIS',
-           'SHARED_APIS', 'PYGAMEZERO_APIS', ]
+           'SHARED_APIS', 'PYGAMEZERO_APIS', 'FRI3DCAMP_APIS', ]
