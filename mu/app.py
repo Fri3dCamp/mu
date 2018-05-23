@@ -34,7 +34,7 @@ from mu.logic import Editor, LOG_FILE, LOG_DIR, DEBUGGER_PORT, ENCODING
 from mu.interface import Window
 from mu.resources import load_pixmap
 from mu.modes import (PythonMode, AdafruitMode, MicrobitMode, DebugMode,
-                      PyGameZeroMode, Fri3dCampMode)
+                      PyGameZeroMode)
 from mu.debugger.runner import run as run_debugger
 
 
@@ -77,7 +77,6 @@ def setup_modes(editor, view):
         'adafruit': AdafruitMode(editor, view),
         'microbit': MicrobitMode(editor, view),
         'debugger': DebugMode(editor, view),
-        'fri3dcamp': Fri3dCampMode(editor, view),
     }
 
     # Check if pgzero is available (without importing it)
