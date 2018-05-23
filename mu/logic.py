@@ -581,7 +581,9 @@ class Editor:
             os.makedirs(wd)
         # Ensure PyGameZero assets are copied over.
         images_path = os.path.join(wd, 'images')
+        fonts_path = os.path.join(wd, 'fonts')
         sounds_path = os.path.join(wd, 'sounds')
+        music_path = os.path.join(wd, 'music')
         if not os.path.exists(images_path):
             logger.debug('Creating directory: {}'.format(images_path))
             os.makedirs(images_path)
@@ -589,11 +591,17 @@ class Editor:
                         os.path.join(images_path, 'alien.png'))
             shutil.copy(path('alien_hurt.png', 'pygamezero/'),
                         os.path.join(images_path, 'alien_hurt.png'))
+        if not os.path.exists(fonts_path):
+            logger.debug('Creating directory: {}'.format(fonts_path))
+            os.makedirs(fonts_path)
         if not os.path.exists(sounds_path):
             logger.debug('Creating directory: {}'.format(sounds_path))
             os.makedirs(sounds_path)
             shutil.copy(path('eep.wav', 'pygamezero/'),
                         os.path.join(sounds_path, 'eep.wav'))
+        if not os.path.exists(music_path):
+            logger.debug('Creating directory: {}'.format(music_path))
+            os.makedirs(music_path)
         # Start the timer to poll every second for an attached or removed
         # USB device.
         self._view.set_usb_checker(1, self.check_usb)
@@ -704,6 +712,10 @@ class Editor:
                   "in another application, re-save the file via the "
                   "'Save as' option and set the encoding to {0}".
                   format(ENCODING, locale.getpreferredencoding()))
+        # Does the file even exist?
+        if not os.path.isfile(path):
+            logger.info('The file {} does not exist.'.format(path))
+            return
         # see if file is open first
         for widget in self._view.widgets:
             if widget.path is None:  # this widget is an unsaved buffer
@@ -787,7 +799,6 @@ class Editor:
                 # abspath will fail for non-paths
                 self.direct_load(os.path.abspath(p))
             except Exception as e:
-                self._view.show_message(_('Can\'t open {}'.format(p)))
                 logging.warning('Can\'t open file from command line {}'.
                                 format(p), exc_info=e)
 
@@ -926,8 +937,11 @@ class Editor:
         Display browser based help about Mu.
         """
         logger.info('Showing help.')
-        current_locale, encoding = locale.getdefaultlocale()
-        language_code = current_locale[:2]
+        try:
+            current_locale, encoding = locale.getdefaultlocale()
+            language_code = current_locale[:2]
+        except (TypeError, ValueError):
+            language_code = 'en'
         major_version = '.'.join(__version__.split('.')[:2])
         url = 'https://codewith.mu/{}/help/{}'.format(language_code,
                                                       major_version)
@@ -1010,19 +1024,20 @@ class Editor:
         logger.info('Showing available modes: {}'.format(
             list(self.modes.keys())))
         new_mode = self._view.select_mode(self.modes, self.mode, self.theme)
-        if new_mode and new_mode is not self.mode:
-            self.mode = new_mode
-            self.change_mode(self.mode)
-            self.show_status_message(_('Changed to {} mode.').format(
-                                     self.mode.capitalize()))
+        if new_mode and new_mode != self.mode:
+            logger.info('New mode selected: {}'.format(new_mode))
+            self.change_mode(new_mode)
 
     def change_mode(self, mode):
         """
         Given the name of a mode, will make the necessary changes to put the
         editor into the new mode.
         """
-        # Remove the old mode's REPL.
+        self.mode = mode
+        # Remove the old mode's REPL / filesystem / plotter if required.
         self._view.remove_repl()
+        self._view.remove_filesystem()
+        self._view.remove_plotter()
         # Update buttons.
         self._view.change_mode(self.modes[mode])
         button_bar = self._view.button_bar
@@ -1055,6 +1070,8 @@ class Editor:
             for tab in self._view.widgets:
                 tab.breakpoint_lines = set()
                 tab.reset_annotations()
+        self.show_status_message(_('Changed to {} mode.').format(
+            mode.capitalize()))
 
     def autosave(self):
         """
@@ -1071,20 +1088,42 @@ class Editor:
         """
         Ensure connected USB devices are polled. If there's a change and a new
         recognised device is attached, inform the user via a status message.
+        If a single device is found and Mu is in a different mode ask the user
+        if they'd like to change mode.
         """
+        devices = []
+        device_types = set()
+        # Detect connected devices.
         for name, mode in self.modes.items():
-            if hasattr(mode, "find_device"):
+            if hasattr(mode, 'find_device'):
                 # The mode can detect an attached device.
-                device = mode.find_device(with_logging=False)
-                if device and (device, mode) not in self.connected_devices:
-                    self.connected_devices = set()
-                    self.connected_devices.add((device, mode))
-                    msg = _("Connection from a new device detected.")
-                    if self.mode != name:
-                        msg += _(" Please switch to {} mode.").format(
-                            name.capitalize())
-                    self.show_status_message(msg)
-                    break
+                port = mode.find_device(with_logging=False)
+                if port:
+                    devices.append((name, port))
+                    device_types.add(name)
+        # Remove no-longer connected devices.
+        to_remove = []
+        for connected in self.connected_devices:
+            if connected not in devices:
+                to_remove.append(connected)
+        for device in to_remove:
+            self.connected_devices.remove(device)
+        # Add newly connected devices.
+        for device in devices:
+            if device not in self.connected_devices:
+                self.connected_devices.add(device)
+                mode_name = device[0]
+                device_name = self.modes[mode_name].name
+                msg = _('Detected new {} device.').format(device_name)
+                self.show_status_message(msg)
+                # Only ask to switch mode if a single device type is connected
+                if len(device_types) == 1 and self.mode != mode_name:
+                    msg_body = _('Would you like to change Mu to the {} '
+                                 'mode?').format(device_name)
+                    change_confirmation = self._view.show_confirmation(
+                        msg, msg_body, icon='Question')
+                    if change_confirmation == QMessageBox.Ok:
+                        self.change_mode(mode_name)
 
     def show_status_message(self, message, duration=5):
         """
