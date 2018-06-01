@@ -17,16 +17,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-import os
-import sys
-import os.path
+#import os
+#import sys
+#import os.path
 import logging
-from mu.logic import HOME_DIRECTORY
-from mu.contrib import uflash, microfs
+#from mu.logic import HOME_DIRECTORY
+#from mu.contrib import uflash, microfs
 from mu.modes.api import FRI3DCAMP_APIS, SHARED_APIS
 from mu.modes.base import MicroPythonMode
-from mu.interface.panes import CHARTS
-from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
+#from mu.interface.panes import CHARTS
+#from PyQt5.QtCore import QObject, QThread, pyqtSignal, QTimer
 
 
 logger = logging.getLogger(__name__)
