@@ -47,6 +47,15 @@ class Fri3dCampMode(MicroPythonMode):
         is a name (also used to identify the icon) , description, and handler.
         """
         buttons = []
+
+        buttons.append({
+            'name': 'serial',
+            'display_name': _('Serial'),
+            'description': _('Open a serial connection to your device.'),
+            'handler': self.toggle_repl,
+            'shortcut': 'CTRL+Shift+S',
+        })
+
         return buttons
 
     def api(self):

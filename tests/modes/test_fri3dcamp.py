@@ -13,16 +13,18 @@ def test_fri3dcamp_mode():
     """
     editor = mock.MagicMock()
     view = mock.MagicMock()
-    pm = Fri3dCampMode(editor, view)
-    assert pm.name == 'Fri3dCamp badge'
-    assert pm.description is not None
-    assert pm.icon == 'fri3dcamp'
-    assert pm.is_debugger is False
-    assert pm.editor == editor
-    assert pm.view == view
+    fm = Fri3dCampMode(editor, view)
+    assert fm.name == 'Fri3dCamp badge'
+    assert fm.description is not None
+    assert fm.icon == 'fri3dcamp'
+    assert fm.is_debugger is False
+    assert fm.editor == editor
+    assert fm.view == view
 
-    actions = pm.actions()
-    assert len(actions) == 0
+    actions = fm.actions()
+    assert len(actions) == 1
+    assert actions[0]['name'] == 'serial'
+    assert actions[0]['handler'] == fm.toggle_repl
 
 
 def test_fri3dcamp_api():
