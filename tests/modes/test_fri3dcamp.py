@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Tests for the PyGameZero mode.
+Tests for the Fri3dCamp mode.
 """
 from mu.modes.fri3dcamp import Fri3dCampMode
 from mu.modes.api import SHARED_APIS, FRI3DCAMP_APIS
