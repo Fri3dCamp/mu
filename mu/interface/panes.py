@@ -228,53 +228,56 @@ class MicroPythonREPLPane(QTextEdit):
         while tc.movePosition(QTextCursor.Down):
             pass
         i = 0
-        while i < len(data):
-            if data[i] == 8:  # \b
-                tc.movePosition(QTextCursor.Left)
-                self.setTextCursor(tc)
-            elif data[i] == 13:  # \r
-                pass
-            elif data[i] == 27 and data[i + 1] == 91:  # VT100 cursor: <Esc>[
-                i += 2  # move index to after the [
-                m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])',
-                              data[i:].decode('utf-8'))
+        try:
+            while i < len(data):
+                if data[i] == 8:  # \b
+                    tc.movePosition(QTextCursor.Left)
+                    self.setTextCursor(tc)
+                elif data[i] == 13:  # \r
+                    pass
+                elif data[i] == 27 and data[i + 1] == 91:  # VT100 cursor: <Esc>[
+                    i += 2  # move index to after the [
+                    m = re.search(r'(?P<count>[\d]*)(?P<action>[ABCDK])',
+                                  data[i:].decode('utf-8'))
+                    if m is not None:
+                        # move to (almost) after control seq (will ++ at end of loop)
+                        i += m.end() - 1
 
-                # move to (almost) after control seq (will ++ at end of loop)
-                i += m.end() - 1
+                        if m.group("count") == '':
+                            count = 1
+                        else:
+                            count = int(m.group("count"))
 
-                if m.group("count") == '':
-                    count = 1
+                        if m.group("action") == "A":  # up
+                            tc.movePosition(QTextCursor.Up, n=count)
+                            self.setTextCursor(tc)
+                        elif m.group("action") == "B":  # down
+                            tc.movePosition(QTextCursor.Down, n=count)
+                            self.setTextCursor(tc)
+                        elif m.group("action") == "C":  # right
+                            tc.movePosition(QTextCursor.Right, n=count)
+                            self.setTextCursor(tc)
+                        elif m.group("action") == "D":  # left
+                            tc.movePosition(QTextCursor.Left, n=count)
+                            self.setTextCursor(tc)
+                        elif m.group("action") == "K":  # delete things
+                            if m.group("count") == "":  # delete to end of line
+                                tc.movePosition(QTextCursor.EndOfLine,
+                                                mode=QTextCursor.KeepAnchor)
+                                tc.removeSelectedText()
+                                self.setTextCursor(tc)
+                elif data[i] == 10:  # \n
+                    tc.movePosition(QTextCursor.End)
+                    self.setTextCursor(tc)
+                    self.insertPlainText(chr(data[i]))
                 else:
-                    count = int(m.group("count"))
-
-                if m.group("action") == "A":  # up
-                    tc.movePosition(QTextCursor.Up, n=count)
+                    tc.deleteChar()
                     self.setTextCursor(tc)
-                elif m.group("action") == "B":  # down
-                    tc.movePosition(QTextCursor.Down, n=count)
-                    self.setTextCursor(tc)
-                elif m.group("action") == "C":  # right
-                    tc.movePosition(QTextCursor.Right, n=count)
-                    self.setTextCursor(tc)
-                elif m.group("action") == "D":  # left
-                    tc.movePosition(QTextCursor.Left, n=count)
-                    self.setTextCursor(tc)
-                elif m.group("action") == "K":  # delete things
-                    if m.group("count") == "":  # delete to end of line
-                        tc.movePosition(QTextCursor.EndOfLine,
-                                        mode=QTextCursor.KeepAnchor)
-                        tc.removeSelectedText()
-                        self.setTextCursor(tc)
-            elif data[i] == 10:  # \n
-                tc.movePosition(QTextCursor.End)
-                self.setTextCursor(tc)
-                self.insertPlainText(chr(data[i]))
-            else:
-                tc.deleteChar()
-                self.setTextCursor(tc)
-                self.insertPlainText(chr(data[i]))
-            i += 1
-        self.ensureCursorVisible()
+                    self.insertPlainText(chr(data[i]))
+                i += 1
+            self.ensureCursorVisible()
+        except IndexError as err:
+            print(err)
 
     def clear(self):
         """

@@ -22,9 +22,11 @@ def test_fri3dcamp_mode():
     assert fm.view == view
 
     actions = fm.actions()
-    assert len(actions) == 1
-    assert actions[0]['name'] == 'serial'
+    assert len(actions) == 2
+    assert actions[0]['name'] == 'repl'
     assert actions[0]['handler'] == fm.toggle_repl
+    assert actions[1]['name'] == 'firmware flash'
+    assert actions[1]['handler'] == fm.flash_firmware
 
 
 def test_fri3dcamp_api():

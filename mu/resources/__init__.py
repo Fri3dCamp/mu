@@ -26,7 +26,6 @@ from PyQt5.QtCore import QDir
 QDir.addSearchPath('images', resource_filename(__name__, 'images'))
 QDir.addSearchPath('css', resource_filename(__name__, 'css'))
 
-
 def path(name, resource_dir="images/"):
     """Return the filename for the referenced image."""
     return resource_filename(__name__, resource_dir + name)
