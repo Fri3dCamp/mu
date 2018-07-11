@@ -12,13 +12,13 @@ with open('CHANGES.rst') as f:
     changes = f.read()
 
 install_requires = ['pycodestyle==2.3.1', 'pyflakes==1.6.0',
-                    'pyserial==3.4', 'pyqt5==5.10.1', 'qscintilla>=2.10',
+                    'pyserial==3.4', 'pyqt5==5.10.1', 'qscintilla==2.10',
                     'qtconsole==4.3.1', 'matplotlib==2.1.2',
-                    'pgzero==1.2', 'PyQtChart>=5.10', 'appdirs>=1.4.3',
-                    'gpiozero>=1.4.1', 'guizero>=0.4.5',
-                    'pigpio>=1.40.post1', 'Pillow>=5.0.0',
-                    'requests>=2.18.4', 'esptool>=2.3.1',
-                    'mock>=2.0.0', ]
+                    'pgzero==1.2', 'PyQtChart==5.10', 'appdirs==1.4.3',
+                    'gpiozero==1.4.1', 'guizero==0.4.5',
+                    'pigpio==1.40.post1', 'Pillow==5.0.0',
+                    'requests==2.18.4', 'esptool==2.3.1',
+                    'mock==2.0.0', ]
 
 # Exclude packages not available for ARM in PyPI/piwheels (Raspberry Pi)
 try:
