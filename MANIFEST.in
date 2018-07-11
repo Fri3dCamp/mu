@@ -7,5 +7,7 @@ include mu/resources/css/*
 include mu/resources/images/*
 include mu/resources/fonts/*
 include mu/resources/pygamezero/*
+include mu/resources/firmware/MicroPython_LoBo_esp32/esp32/*
+include mu/resources/firmware/MicroPython_LoBo_esp32/esp32/bootloader/*
 include run.py
 recursive-include mu/locale *
